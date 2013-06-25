@@ -1,0 +1,8 @@
+Negative test: sheet number validation.
+Two sheets have sheetnum=1,
+one sheet has sheetnum =3.
+----
+Expect two error messages:
+One complaint that two sheets are numbered '1',
+One complaint that sheet number '2' is missing.
+The .sch files should be unchanged.

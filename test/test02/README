@@ -1,0 +1,12 @@
+Tests that gxref ignores attributes that should be ignored.
+Basic test case.  
+Two signals appear on page 1 that should be cross-ref'ed.
+One component on page 1 has no netname attr, and should be ignored.
+One component on page 1 has no xref attr, and should be ignored.
+One signal appears on page 2.
+Page 2 has no numsheets attr, which should be benign.
+One signal appears on page 3.
+----
+xref attributes should be updated on all sheets where the
+component also has a netname.
+numsheets attribute should be udpated on sheets 1 and 3.

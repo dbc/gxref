@@ -1,0 +1,170 @@
+#!/usr/bin/env python
+
+import argparse
+import os
+
+# Globals
+sheet = {} # sheet[ <filename> ] = sheetNum'
+xref = {} # xref[ <netname> ] = [ sheetNum ]
+netLine = {} # netLine [ (sheetNum,lineNum) ] = netName
+numberOfSheets = None
+
+def processArgs():
+    parser = argparse.ArgumentParser(
+        description="Cross-references gEDA schematics.",
+        epilog="""
+All .sch files must have one 'sheetnum' attribute in them somewhere.
+Any component with both a 'netname' attribute and a 'xref' attribute
+will be cross-referenced.  The 'xref' attributes will be updated with
+a list of sheet numbers where cross-references are found.
+If a 'numsheets' attribute is present, it will also be updated.""")
+    parser.add_argument('schematic',nargs='*')
+    args = parser.parse_args()
+    return args
+
+def addXref(netName, sheetNum, lineNum):
+    "Adds a cross reference to the xref dict."
+    global xref
+    if netName in xref:
+        xref[netName].append(sheetNum)
+    else:
+        xref[netName] = [sheetNum]
+    netLine[ (sheetNum, lineNum) ] = netName
+
+def formatXref(netName, currentSheet):
+    "Returns an 'xref' attribute as a text string."
+    pgs = set(xref[netName])
+    try:
+        pgs.remove(currentSheet)
+    except:
+        pass
+    l = list(pgs)
+    l.sort()
+    s = 'xref='
+    s += ','.join([str(x) for x in l])
+    return s + '\n'
+
+def sheetNumsAreValid():
+    global numberOfSheets
+    sheetNums = set(sheet.values())
+    numberOfSheets = max(sheetNums)
+    found = [0] * (numberOfSheets+1)
+    for sn in sheet.values():
+        found[sn] += 1
+    valid = True
+    for i in xrange(1,numberOfSheets+1):
+        if found[i] == 0:
+            valid = False
+            print 'No sheet',i,'found.'
+        if found[i] > 1:
+            valid = False
+            print 'Multiple sheets numbered',i,'found:'
+            for name in sheet:
+                if sheet[name] == i:
+                    print ' ', name
+    return valid
+
+def getSheetNum(f):
+    "Value of the first 'sheetnum' attribute found, or None."
+    inBraces = False
+    for ln in f:
+        flds = ln.strip().split(' ')
+        if flds[0] == '{':
+            inBraces = True
+        elif flds[0] == '}':
+            inBraces = False
+        else:
+            if inBraces:
+                if flds[0] != 'T':
+                    attrName, attrVal = flds[0].split('=')
+                    if attrName == 'sheetnum':
+                        return int(attrVal)
+    return None
+
+def buildXrefs(f, sheetNumber):
+    "Updates xref dict with any off-sheet connectors found."
+    inBraces = False
+    lineNum = 0
+    for ln in f:
+        lineNum += 1
+        flds = ln.strip().split(' ')
+        if flds[0] == '{':
+            inBraces = True
+            braceLine = lineNum
+            xref = False
+            netname = None
+        elif flds[0] == '}':
+            inBraces = False
+            if xref and netname != None:
+                addXref(netname, sheetNumber, braceLine)
+        else:
+            if inBraces:
+                if flds[0] != 'T':
+                    attrName, attrVal = flds[0].split('=')
+                    if attrName == 'xref':
+                        xref = True
+                    elif attrName == 'netname':
+                        netname = attrVal.split(':')[0]
+
+def updateXref(inFile, outFile, sheetNum):
+    "Re-writes .sch file with updated 'xref' attributes."
+    inBraces = False
+    lineNum = 0
+    for ln in inFile:
+        outLn = ln # Assume line will be simply copied over.
+        lineNum += 1
+        flds = ln.strip().split(' ')
+        if flds[0] == '{':
+            inBraces = True
+            braceLine = lineNum
+            try:
+                netName = netLine[(sheetNum,lineNum)]
+            except:
+                netName = None
+        elif flds[0] == '}':
+            inBraces = False
+        else:
+            if inBraces:
+                if flds[0] != 'T':
+                    attrName, attrVal = flds[0].split('=')
+                    if attrName == 'xref' and netName != None:
+                        outLn = formatXref(netName,sheetNum)
+                    if attrName == 'numsheets':
+                        outLn = ''.join(['numsheets=',str(numberOfSheets),'\n'])
+        outFile.write(outLn)
+
+###################################################
+# Main
+
+args = processArgs()
+
+# Phase 1: Collect all sheet numbers.
+for fileName in args.schematic:
+    with open(fileName) as f:
+        sn = getSheetNum(f)
+        if sn != None:
+            sheet[fileName] = sn
+        else:
+            print ' '.join([fileName,"has no 'sheetnum' attribute."])
+            exit(1)
+
+# Inter-phase: Validate sheet numbers as continuous and non-overlapping.
+if not sheetNumsAreValid():
+    exit(1)
+
+# Phase 2: Collect off-page references.
+for fileName in args.schematic:
+    with open(fileName) as f:
+        buildXrefs(f, sheet[fileName])
+
+# Phase 3: Update off-page xref attributes.
+for fileName in args.schematic:
+    # Save a copy as .sch~
+    saved = fileName + '~'
+    os.rename(fileName, saved)
+    # Open old for reading, new for writing.
+    # Pass over it and update xref's. 
+    with open(saved) as inFile:
+        with open(fileName,'w') as outFile:
+            updateXref(inFile, outFile, sheet[fileName])
+

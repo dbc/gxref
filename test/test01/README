@@ -1,0 +1,7 @@
+Basic test case.  
+Two signals appear on page 1.
+One signal appears on page 2.
+One signal appears on page 3.
+----
+xref attributes should be updated on all sheets.
+numsheets attribute should be udpated on all sheets.

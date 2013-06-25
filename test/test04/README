@@ -1,0 +1,6 @@
+Negative test: sheet number validation.
+Sheet 1 is missing 'sheetnum' attribute.
+----
+Expect one error message:
+Complaint that sheet 1 has no 'sheetnum' attr.
+The .sch files should be unchanged.
