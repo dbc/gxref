@@ -14,7 +14,7 @@ Requirements:
   non-overlapping.  While somewhat over-restrictive, this
   is a robust sanity check.
 - gxref expects to find component instances that serve as
-  off-page connectors.  If a component has both a 'netname'
+  off-page connectors.  If a component has both a 'net'
   attribute and an 'xref' attribute, gxref will assume it
   is an off-page connector.  There are no other requirements
   for the component.
@@ -23,7 +23,7 @@ Results:
 
 - gxref updates the 'xref' attribute for all components that
   it identifies as off-page connectors, using the associated
-  'netname' attribute to build the dictionary.
+  'net' attribute to build the dictionary.
 - If a 'numsheets' attribute is encountered on any sheet, it
   will be updated to the maximum sheetnum. 
 
@@ -39,7 +39,7 @@ Notes:
   to guard against file corruption.
 - See the 'symbols' directory for some example off-page
   connector symbols.  Any symbol with both an 'xref' and
-  a 'netname' will work, so it is easy to make your own.
+  a 'net' will work, so it is easy to make your own.
   There is also an example title block with 'sheetnum' and
   'numsheets' attributes.
 - gxref is unaware of hierarchy and has not been tested

@@ -23,7 +23,7 @@ import os
 
 # Globals
 sheet = {} # sheet[ <filename> ] = sheetNum'
-xref = {} # xref[ <netname> ] = [ sheetNum ]
+xref = {} # xref[ <net> ] = [ sheetNum ]
 netLine = {} # netLine [ (sheetNum,lineNum) ] = netName
 numberOfSheets = None
 
@@ -32,7 +32,7 @@ def processArgs():
         description="Cross-references gEDA schematics.",
         epilog="""
 All .sch files must have one 'sheetnum' attribute in them somewhere.
-Any component with both a 'netname' attribute and a 'xref' attribute
+Any component with both a 'net' attribute and a 'xref' attribute
 will be cross-referenced.  The 'xref' attributes will be updated with
 a list of sheet numbers where cross-references are found.
 If a 'numsheets' attribute is present, it will also be updated.""")
@@ -121,7 +121,7 @@ def buildXrefs(f, sheetNumber):
                     attrName, attrVal = flds[0].split('=')
                     if attrName == 'xref':
                         xref = True
-                    elif attrName == 'netname':
+                    elif attrName == 'net':
                         netname = attrVal.split(':')[0]
 
 def updateXref(inFile, outFile, sheetNum):
