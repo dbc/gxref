@@ -7,7 +7,7 @@ sheetnum=2
 C 42000 45700 1 0 0 offpagenarrow-1.sym
 {
 T 43450 45800 5 8 1 1 0 7 1
-netname=FOO:1
+net=FOO:1
 T 42050 45800 5 8 1 1 0 1 1
 xref=?
 T 42000 46600 5 10 0 0 0 0 1

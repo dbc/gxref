@@ -9,7 +9,7 @@ numsheets=3
 C 52600 45400 1 0 1 offpagenarrow-1.sym
 {
 T 51150 45500 5 8 1 1 0 1 1
-netname=BAR:1
+net=BAR:1
 T 52550 45500 5 8 1 1 0 7 1
 xref=1
 T 52600 46300 5 10 0 0 0 6 1
