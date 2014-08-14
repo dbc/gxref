@@ -1,3 +1,7 @@
+=====
+gxref
+=====
+
 gxref updates off-sheet cross references in gEDA gschem schematics.
 
 When a design consists of multiple schematic sheets, it is desirable
@@ -27,7 +31,7 @@ Results:
 - If a 'numsheets' attribute is encountered on any sheet, it
   will be updated to the maximum sheetnum. 
 
-Typical usage:
+Typical usage: ::
 
     gxref *.sch
 
